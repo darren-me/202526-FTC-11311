@@ -1,2 +1,2 @@
 # odometry11311
-odometry thingy for team 11311 (test)
+ftc 2025-26 season for 11311

@@ -3,23 +3,29 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
+import java.util.Locale;
 
 @TeleOp(name="BasicMovement", group="Testing")
 public class BasicMovement extends LinearOpMode {
+    private DcMotor frontLeft;
+    private DcMotor frontRight;
+    private DcMotor backLeft;
+    private DcMotor backRight;
 
-    // Declare motors
-    private DcMotor frontLeft  = null;
-    private DcMotor frontRight = null;
-    private DcMotor backLeft   = null;
-    private DcMotor backRight  = null;
+    GoBildaPinpointDriver odo;
+    double oldTime = 0;
 
     @Override
     public void runOpMode() {
-        // Initialize hardware
-        frontLeft  = hardwareMap.get(DcMotor.class, "fl");
+        // Motor mapping
+        frontLeft = hardwareMap.get(DcMotor.class, "fl");
         frontRight = hardwareMap.get(DcMotor.class, "fr");
-        backLeft   = hardwareMap.get(DcMotor.class, "bl");
-        backRight  = hardwareMap.get(DcMotor.class, "br");
+        backLeft = hardwareMap.get(DcMotor.class, "bl");
+        backRight = hardwareMap.get(DcMotor.class, "br");
 
         // Set motor directions
         frontLeft.setDirection(DcMotor.Direction.FORWARD);
@@ -27,45 +33,92 @@ public class BasicMovement extends LinearOpMode {
         backLeft.setDirection(DcMotor.Direction.FORWARD);
         backRight.setDirection(DcMotor.Direction.REVERSE);
 
-        // Wait for start
+        // Only run odometry if available
+        try {
+            odo = hardwareMap.get(GoBildaPinpointDriver.class, "odo");
+            odo.setOffsets(-84.0, -168.0, DistanceUnit.MM);
+            odo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
+            odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
+            odo.resetPosAndIMU();
+
+            telemetry.addData("Status", "Initialized");
+            telemetry.addData("X offset", odo.getXOffset(DistanceUnit.MM));
+            telemetry.addData("Y offset", odo.getYOffset(DistanceUnit.MM));
+            telemetry.addData("Device Version", odo.getDeviceVersion());
+            telemetry.addData("Heading Scalar", odo.getYawScalar());
+        } catch (Exception e) {
+            telemetry.addData("Odometry", "Not Found");
+        }
+
+        telemetry.update();
         waitForStart();
+        resetRuntime();
+
+        telemetry.speak("I'm going to tickle your toes hehehehhehehehehhehe muahahhahhaha hehhehehhehhehehheheh hahahhahahhahahah hehehhehehhehe hahahhahhahaha hehehheehhehehehehehhehehee hahahhahahhahhaa");
 
         while (opModeIsActive()) {
-            // Get joystick values
-            double drive = -gamepad1.left_stick_y;    // Forward/backward movement
-            double strafe = gamepad1.left_stick_x;    // Left/right strafing
-            double turn = gamepad1.right_stick_x;     // Rotation/turning
+            if (odo != null) {
+                odo.update();
 
-            // Calculate motor powers
-            double frontLeftPower  = drive + strafe + turn;
+                if (gamepad1.a) {
+                    odo.resetPosAndIMU();
+                }
+
+                if (gamepad1.b) {
+                    odo.recalibrateIMU();
+                }
+            }
+
+            double drive = -gamepad1.left_stick_y;
+            double strafe = gamepad1.left_stick_x;
+            double turn = gamepad1.right_stick_x;
+
+            double frontLeftPower = drive + strafe + turn;
             double frontRightPower = drive - strafe - turn;
-            double backLeftPower   = drive - strafe + turn;
-            double backRightPower  = drive + strafe - turn;
+            double backLeftPower = drive - strafe + turn;
+            double backRightPower = drive + strafe - turn;
 
             double maxPower = Math.max(Math.max(Math.abs(frontLeftPower), Math.abs(frontRightPower)),
                     Math.max(Math.abs(backLeftPower), Math.abs(backRightPower)));
 
             if (maxPower > 1.0) {
-                frontLeftPower  /= maxPower;
+                frontLeftPower /= maxPower;
                 frontRightPower /= maxPower;
-                backLeftPower   /= maxPower;
-                backRightPower  /= maxPower;
+                backLeftPower /= maxPower;
+                backRightPower /= maxPower;
             }
 
-            // Set motor powers
             frontLeft.setPower(frontLeftPower);
             frontRight.setPower(frontRightPower);
             backLeft.setPower(backLeftPower);
             backRight.setPower(backRightPower);
 
-            // Show telemetry
-            telemetry.addData("Drive", drive);
-            telemetry.addData("Strafe", strafe);
-            telemetry.addData("Turn", turn);
-            telemetry.addData("FL Power", frontLeftPower);
-            telemetry.addData("FR Power", frontRightPower);
-            telemetry.addData("BL Power", backLeftPower);
-            telemetry.addData("BR Power", backRightPower);
+            double newTime = getRuntime();
+            double loopTime = newTime - oldTime;
+            double frequency = 1 / loopTime;
+            oldTime = newTime;
+
+            telemetry.addData("Drive", "%.2f", drive);
+            telemetry.addData("Strafe", "%.2f", strafe);
+            telemetry.addData("Turn", "%.2f", turn);
+            telemetry.addData("FL Power", "%.2f", frontLeftPower);
+            telemetry.addData("FR Power", "%.2f", frontRightPower);
+            telemetry.addData("BL Power", "%.2f", backLeftPower);
+            telemetry.addData("BR Power", "%.2f", backRightPower);
+
+            if (odo != null) {
+                Pose2D pos = odo.getPosition();
+                String data = String.format(Locale.US, "{X: %.1f, Y: %.1f, H: %.1f}", pos.getX(DistanceUnit.MM), pos.getY(DistanceUnit.MM), pos.getHeading(AngleUnit.DEGREES));
+                telemetry.addData("Position", data);
+
+                String velocity = String.format(Locale.US,"{XVel: %.1f, YVel: %.1f, HVel: %.1f}", odo.getVelX(DistanceUnit.MM), odo.getVelY(DistanceUnit.MM), odo.getHeadingVelocity(UnnormalizedAngleUnit.DEGREES));
+                telemetry.addData("Velocity", velocity);
+
+                telemetry.addData("Status", odo.getDeviceStatus());
+                telemetry.addData("Pinpoint Frequency", odo.getFrequency());
+            }
+
+            telemetry.addData("Loop Frequency", "%.1f Hz", frequency);
             telemetry.update();
         }
     }

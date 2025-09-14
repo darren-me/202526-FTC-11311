@@ -55,7 +55,7 @@ public class BasicMovement extends LinearOpMode {
         resetRuntime();
 
         // This was Darren trust
-        // telemetry.speak("I'm going to tickle your toes hehehehhehehehehhehe muahahhahhaha hehhehehhehhehehheheh hahahhahahhahahah hehehhehehhehe hahahhahhahaha hehehheehhehehehehehhehehee hahahhahahhahhaa huhuhuhuhuhuuu heehehhehehhehhee muahhahahhahahhaha A journey of a thousand miles begins with a single step yes yes"You may delay, but time will not uehuehuheuheuheuehheuhuaha");
+        // telemetry.speak("I'm going to tickle your toes hehehehhehehehehhehe muahahhahhaha hehhehehhehhehehheheh hahahhahahhahahah hehehhehehhehe hahahhahhahaha hehehheehhehehehehehhehehee hahahhahahhahhaa huhuhuhuhuhuuu heehehhehehhehhee muahhahahhahahhaha A journey of a thousand miles begins with a single step yes yes You may delay, but time will not uehuehuheuheuheuehheuhuaha");
 
         while (opModeIsActive()) {
             if (odo != null) {

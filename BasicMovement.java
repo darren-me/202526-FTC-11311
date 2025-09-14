@@ -70,6 +70,7 @@ public class BasicMovement extends LinearOpMode {
                 }
             }
 
+            // Calculate motor powers
             double drive = -gamepad1.left_stick_y;
             double strafe = gamepad1.left_stick_x;
             double turn = gamepad1.right_stick_x;
@@ -79,6 +80,7 @@ public class BasicMovement extends LinearOpMode {
             double backLeftPower = drive - strafe + turn;
             double backRightPower = drive + strafe - turn;
 
+            // Make sure the power doesn't exceed 1
             double maxPower = Math.max(Math.max(Math.abs(frontLeftPower), Math.abs(frontRightPower)),
                     Math.max(Math.abs(backLeftPower), Math.abs(backRightPower)));
 
@@ -99,6 +101,7 @@ public class BasicMovement extends LinearOpMode {
             double frequency = 1 / loopTime;
             oldTime = newTime;
 
+            // Display on driver hub
             telemetry.addData("Drive", "%.2f", drive);
             telemetry.addData("Strafe", "%.2f", strafe);
             telemetry.addData("Turn", "%.2f", turn);

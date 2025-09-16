@@ -1,0 +1,51 @@
+package org.firstinspires.ftc.teamcode;
+
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.HardwareMap;
+
+public class BasicAutoFunctions {
+    
+    // Declare motors
+    private DcMotor leftFront, rightFront, leftRear, rightRear;
+
+    public BasicAutoFunctions(HardwareMap hardwareMap) {
+        leftFront = hardwareMap.get(DcMotor.class, "leftFront");
+        rightFront = hardwareMap.get(DcMotor.class, "rightFront");
+        leftRear = hardwareMap.get(DcMotor.class, "leftRear");
+        rightRear = hardwareMap.get(DcMotor.class, "rightRear");
+
+        leftFront.setDirection(DcMotor.Direction.FORWARD);
+        leftRear.setDirection(DcMotor.Direction.FORWARD);
+        rightFront.setDirection(DcMotor.Direction.REVERSE);
+        rightRear.setDirection(DcMotor.Direction.REVERSE);
+
+        leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        leftRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+    }
+
+    // I don't really think I need to write comments for these
+    public void stopMotors() {
+        setMotorPowers(0, 0, 0, 0);
+    }
+
+    public void drive(double power) {
+        setMotorPowers(power, power, power, power);
+    }
+
+    public void strafe(double power) {
+        setMotorPowers(power, -power, -power, power);
+    }
+
+    public void turn(double power) {
+        setMotorPowers(power, -power, power, -power);
+    }
+
+    private void setMotorPowers(double lf, double rf, double lr, double rr) {
+        leftFront.setPower(lf);
+        rightFront.setPower(rf);
+        leftRear.setPower(lr);
+        rightRear.setPower(rr);
+    }
+}
